@@ -1,0 +1,12 @@
+appId: br.com.bolapresa.btph
+productName: Both Teams Played Hard
+copyright: Copyright © 2020 Victor Ferreira
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null
