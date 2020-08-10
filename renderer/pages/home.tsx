@@ -68,6 +68,15 @@ const Home = () => {
   const classes = useStyles({});
   const [messages, setMessages] = useState<any[]>([]);
 
+  const reloadMessages = () => {
+    if (ipcRenderer) {
+      setMessages(ipcRenderer.sendSync("get-messages"));
+    }
+  }
+
+  const unreadMessages = messages
+    .filter(message => !message.read);
+
   useEffect(() => {
     // componentDidMount()
     if (ipcRenderer) {
@@ -118,7 +127,7 @@ const Home = () => {
       </AppBar>
 
       <div className={classes.container}>
-        <MessageSelector messages={messages} />
+        <MessageSelector messages={unreadMessages} reload={reloadMessages}/>
       </div>
 
       <div className={classes.container}>
@@ -141,7 +150,7 @@ const Home = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {messages.map((row, key) => (
+                {unreadMessages.map((row, key) => (
                   <TableRow key={key}>
                     <TableCell component="th" scope="row">
                       {row.title}
@@ -190,7 +199,7 @@ const Home = () => {
   );
 };
 
-function MessageSelector({ messages }: any) {
+function MessageSelector({ messages, reload }: any) {
   const [message, setMessage] = useState<any>(undefined);
   const [category, setCategory] = useState<any>("");
 
@@ -198,6 +207,14 @@ function MessageSelector({ messages }: any) {
   const [categories, setCategories] = useState<any[]>([]);
 
   const closeMessageModal = () => setMessage(undefined);
+
+  const readMessage = (message) => {
+    if (ipcRenderer) {
+      ipcRenderer.send("read-message", { ...message });
+    }
+    setMessage(undefined);
+    reload();
+  };
 
   useEffect(() => {
     // componentDidMount()
@@ -236,7 +253,6 @@ function MessageSelector({ messages }: any) {
         variant="contained"
         style={{ float: "right" }}
         onClick={() => {
-          // TODO: select message based on selected category
           if (!messages.length) return;
 
           const filteredMessages = category
@@ -247,6 +263,7 @@ function MessageSelector({ messages }: any) {
             filteredMessages[
               Math.floor(Math.random() * Math.floor(filteredMessages.length))
             ];
+
           setMessage(message);
         }}
       >
@@ -258,6 +275,7 @@ function MessageSelector({ messages }: any) {
         <ShowSelectedMessage
           message={message}
           closeMessageModal={closeMessageModal}
+          readMessage={readMessage}
         />
       )}
     </div>
@@ -266,8 +284,13 @@ function MessageSelector({ messages }: any) {
 
 export default Home;
 
-function ShowSelectedMessage({ message, closeMessageModal }: any) {
+function ShowSelectedMessage({ message, closeMessageModal, readMessage }: any) {
   const classes = useStyles({});
+
+  const readMessageClick = () => {
+    message.read = true;
+    readMessage(message);
+  }
 
   return (
     <div>
@@ -319,6 +342,16 @@ function ShowSelectedMessage({ message, closeMessageModal }: any) {
                 </div>
               </>
             )}
+            <Divider />
+            <Button
+              size='large'
+              variant="contained"
+              color='secondary'
+              fullWidth
+              onClick={readMessageClick}
+            >
+              Marcar como lida
+            </Button>
           </Paper>
         </div>
       </Modal>

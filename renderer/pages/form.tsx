@@ -103,6 +103,7 @@ const Next = () => {
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Formik
               initialValues={{
+                read: false,
                 title: "",
                 sender: "",
                 category: [],
