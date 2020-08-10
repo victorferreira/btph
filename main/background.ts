@@ -64,3 +64,18 @@ ipcMain.on("add-category", (event, arg) => {
   }
   store.set("categories", categories);
 });
+
+ipcMain.on("read-message", (event, arg) => {
+  const messages = store.get("messages") || [];
+
+  const messageIndex = messages.findIndex(message =>
+    message.title === arg.title &&
+    message.subject === arg.subject
+  );
+
+  const newMessages = [...messages];
+  newMessages[messageIndex] = arg;
+
+  store.set("messages", newMessages);
+});
+
